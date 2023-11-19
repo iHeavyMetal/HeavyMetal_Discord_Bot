@@ -8,3 +8,8 @@ Using:
 -discord.py  
 -discord commands
 -python-decouple
+
+
+Decouple:
+Create .env file:
+TOKEN=YOUR_BOT_TOKEN
