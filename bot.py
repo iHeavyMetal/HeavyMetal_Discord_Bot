@@ -120,47 +120,30 @@ async def help(ctx):
     komendy.add_field(name = "!pkn", value="Użyj emoji-   👊, ✌️, ✋, aby zagrać w papier, kamień, nożyce 🤘", inline=False)
     await ctx.send(embed = komendy)
 
-########### N A P R A W I C ########
-# @client.group()
-# async def admin(ctx):
-#     pass
-# @admin.command()
-#
-# @client.group()
-# async def edit(ctx): #zmien nazwe na admin
-#     pass
-#
-#
-# @edit.command()
-# async def servername(ctx,password,server_id,*,input):
-#     if password == "123" and ctx.channel.type == discord.ChannelType.private:
-#         guild = client.get_guild(server_id)
-#         if guild:
-#             await ctx.guild.edit(name=input)
-#             await ctx.send("Nazwa została zmieniona")
-#             print("Zmieniono nazwę serwera")
-#         else:
-#             await ctx.send("Błędne ID serwera")
-#     else:
-#         await ctx.send("Password NOK")
-# #============================ponizej info z CHgpt. nalezy stworzyć hierarchie dla komend admina====================================
-# @bot.group(name="admin", help="Komendy administracyjne")
-# async def admin(ctx):
-#     if ctx.invoked_subcommand is None:
-#         await ctx.send("Dostępne komendy administracyjne: !admin kick, !admin ban, !admin warn")
-#
-# @admin.command(name="kick")
-# async def kick(ctx, user: discord.Member):
-#
-#
-# @admin.command(name="ban")
-# async def ban(ctx, user: discord.Member):
-#
-#
-# @admin.command(name="warn")
-# async def warn(ctx, user: discord.Member):
-#
-
+@client.command(aliases=["adminpomoc", "adminkomendy", "adminobocie"])
+@is_admin()
+async def adminhelp(ctx):
+    print("Command !adminhelp")
+    komendy = discord.Embed(title = "Komendy Admin", description = "Komendy dla administracji.", color = discord.Colour.gold())
+    komendy.set_thumbnail(url = "https://tr.rbxcdn.com/8781ac05c8061e4d64e35904dcf300fd/420/420/Image/Png")
+    komendy.add_field(name = "!edit servername", value = "Zmiana nazwy serwera. Nazwy ze spacjami sa dozwolone.", inline=False)
+    komendy.add_field(name = "!edit createtextchannel", value="Tworzenie kanału tekstowego na górze listy kanałów.", inline=False)
+    komendy.add_field(name = "!edit createvoicechannel", value="Tworzenie kanału głosowego na górze listy kanałów.", inline=False)
+    komendy.add_field(name = "!edit createrole", value="Tworzenie nowej roli na serwerze.", inline=False)
+    komendy.add_field(name = "!kick", value="Kick użytkownika.", inline=False)
+    komendy.add_field(name = "!ban", value="Ban użytkownika.", inline=False)
+    komendy.add_field(name = "!unban", value="Unban użytkownika.", inline=False)
+    komendy.add_field(name = "!deletemessages", value="Usunięcie wiadomości tekstowych. Możliwośc usunięcia określonej liczby wiadomości oraz wiadomości wysłanych po konkretnej dacie '!deletemessages / day month'.", inline=False)
+    admin_user = ctx.author
+    admin_channel = await admin_user.create_dm()
+    await admin_channel.send(embed=komendy) #send dm
+    await ctx.message.delete() #delete message !adminhelp from chat
+@adminhelp.error
+async def adminhelp_error(ctx, error):
+    if isinstance(error, commands.CheckFailure):
+        await ctx.send("Nie masz wystarczających uprawnień do wykonania tej komendy.")
+    else:
+        raise error
 
 @client.group()
 async def edit(ctx):
