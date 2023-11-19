@@ -145,8 +145,8 @@ async def adminhelp(ctx):
     komendy.add_field(name="!mute", value="Zmutowanie użytkownika.", inline=False)
     komendy.add_field(name="!unmute", value="Odmutowanie użytkownika.", inline=False)
     komendy.add_field(name="!deafen", value="Ogłuszenie użytkownika.", inline=False)
-    komendy.add_field(name="!undeafen", value="?? użytkownika.", inline=False)
-    komendy.add_field(name="!voicekick", value="Kikc użytkownika z kanału głosowego.", inline=False)
+    komendy.add_field(name="!undeafen", value="Przywrócenie odsłuchu użytkownikowi.", inline=False)
+    komendy.add_field(name="!voicekick", value="Kick użytkownika z kanału głosowego.", inline=False)
     admin_user = ctx.author
     admin_channel = await admin_user.create_dm()
     await admin_channel.send(embed=komendy) #send dm
@@ -169,26 +169,12 @@ async def servername(ctx, *, input):
     await ctx.send(f'Zmieniłem nazwę serwera na: "{server_name.name}"')
     print("Servername changed!")
 
-@servername.error
-async def servername_error(ctx, error):
-    if isinstance(error, commands.CheckFailure):
-        await ctx.send("Nie masz wystarczających uprawnień do wykonania tej komendy.")
-    else:
-        raise error
-
 @edit.command()
 @is_admin()
 async def createtextchannel(ctx, *, input):
     text_channel = await ctx.guild.create_text_channel(name=input)
     await ctx.send(f'Utworzono nowy kanał tekstowy: {text_channel.name}')
     print("Text channel created!")
-
-@createtextchannel.error
-async def createtextchannel_error(ctx, error):
-    if isinstance(error, commands.CheckFailure):
-        await ctx.send("Nie masz wystarczających uprawnień do wykonania tej komendy.")
-    else:
-        raise error
 
 @edit.command()
 @is_admin()
@@ -197,13 +183,6 @@ async def createvoicechannel(ctx, *, input):
    await ctx.send(f'Utworzono nowy kanał głosowy: {voice_channel.name}')
    print("Voice channel created!")
 
-@createvoicechannel.error
-async def createvoicechannel_error(ctx, error):
-    if isinstance(error, commands.CheckFailure):
-        await ctx.send("Nie masz wystarczających uprawnień do wykonania tej komendy.")
-    else:
-        raise error
-
 @edit.command()
 @is_admin()
 async def createrole(ctx, *, input):
@@ -211,36 +190,15 @@ async def createrole(ctx, *, input):
    await ctx.send(f'Utworzono nową rolę: {role.name}')
    print("New role created!")
 
-@createrole.error
-async def createrole_error(ctx, error):
-    if isinstance(error, commands.CheckFailure):
-        await ctx.send("Nie masz wystarczających uprawnień do wykonania tej komendy.")
-    else:
-        raise error
-
 @client.command()
 @is_admin()
 async def kick(ctx, member: discord.Member, *, reason = None):
     await ctx.guild.kick(member, reason=reason)
 
-@kick.error
-async def kick_error(ctx, error):
-    if isinstance(error, commands.CheckFailure):
-        await ctx.send("Nie masz wystarczających uprawnień do wykonania tej komendy.")
-    else:
-        raise error
-
 @client.command()
 @is_admin()
 async def ban(ctx, member: discord.Member, *, reason = None):
     await ctx.guild.ban(member, reason=reason)
-
-@ban.error
-async def ban_error(ctx, error):
-    if isinstance(error, commands.CheckFailure):
-        await ctx.send("Nie masz wystarczających uprawnień do wykonania tej komendy.")
-    else:
-        raise error
 
 @client.command()
 @is_admin()
@@ -251,13 +209,6 @@ async def unban(ctx, *, input):
         disc = entry.user.discriminator
         if name == username and discriminator == disc:
             await ctx.guild.unban(entry.user)
-
-@unban.error
-async def unban_error(ctx, error):
-    if isinstance(error, commands.CheckFailure):
-        await ctx.send("Nie masz wystarczających uprawnień do wykonania tej komendy.")
-    else:
-        raise error
 
 @client.command()
 @is_admin()
@@ -271,12 +222,6 @@ async def deletemessages(ctx, amount, day : int = None, month : int = None, year
     else:
         await ctx.channel.purge(limit = int(amount)+1)
         print("limit - Messages deleted!")
-@deletemessages.error
-async def deletemessages_error(ctx, error):
-    if isinstance(error, commands.CheckFailure):
-        await ctx.send("Nie masz wystarczających uprawnień do wykonania tej komendy.")
-    else:
-        raise error
 
 @client.command()
 @is_admin()
@@ -308,6 +253,14 @@ async def voicekick(ctx, user : discord.Member):
     await user.edit(voice_channel = None)
     print("User kicked")
 
+@servername.error
+@createtextchannel.error
+@createvoicechannel.error
+@createrole.error
+@kick.error
+@ban.error
+@unban.error
+@deletemessages.error
 @mute.error
 @unmute.error
 @deafen.error
