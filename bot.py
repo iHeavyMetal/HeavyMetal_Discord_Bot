@@ -2,10 +2,16 @@ import discord
 import random
 from discord.ext import commands
 from decouple import config
+from datetime import datetime
 
 intents = discord.Intents.all()
 client = discord.Client(intents=intents)
 client = commands.Bot(intents=intents, command_prefix = '!', help_command=None)
+
+def is_admin():
+    async def predicate(ctx):
+        return any(role.name == "Admin" for role in ctx.author.roles)
+    return commands.check(predicate)
 
 @client.event
 async def on_ready():
@@ -114,23 +120,17 @@ async def help(ctx):
     komendy.add_field(name = "!pkn", value="Użyj emoji-   👊, ✌️, ✋, aby zagrać w papier, kamień, nożyce 🤘", inline=False)
     await ctx.send(embed = komendy)
 
-@client.group()
-async def admin(ctx):
-    pass
-
 ########### N A P R A W I C ########
-
-
-#@admin.command()
-    
-
-
-
+# @client.group()
+# async def admin(ctx):
+#     pass
+# @admin.command()
+#
 # @client.group()
 # async def edit(ctx): #zmien nazwe na admin
 #     pass
-
-
+#
+#
 # @edit.command()
 # async def servername(ctx,password,server_id,*,input):
 #     if password == "123" and ctx.channel.type == discord.ChannelType.private:
@@ -143,7 +143,7 @@ async def admin(ctx):
 #             await ctx.send("Błędne ID serwera")
 #     else:
 #         await ctx.send("Password NOK")
-#============================ponizej info z CHgpt. nalezy stworzyć hierarchie dla komend admina====================================
+# #============================ponizej info z CHgpt. nalezy stworzyć hierarchie dla komend admina====================================
 # @bot.group(name="admin", help="Komendy administracyjne")
 # async def admin(ctx):
 #     if ctx.invoked_subcommand is None:
@@ -151,20 +151,136 @@ async def admin(ctx):
 #
 # @admin.command(name="kick")
 # async def kick(ctx, user: discord.Member):
-#     # Implementacja komendy kick
+#
 #
 # @admin.command(name="ban")
 # async def ban(ctx, user: discord.Member):
-#     # Implementacja komendy ban
+#
 #
 # @admin.command(name="warn")
 # async def warn(ctx, user: discord.Member):
-#     # Implementacja komendy warn
+#
 
 
+@client.group()
+async def edit(ctx):
+    pass
 
+@edit.command()
+@is_admin()
+async def servername(ctx, *, input):
+    server_name = await ctx.guild.edit(name=input)
+    await ctx.send(f'Zmieniłem nazwę serwera na: "{server_name.name}"')
+    print("Servername changed!")
 
+@servername.error
+async def servername_error(ctx, error):
+    if isinstance(error, commands.CheckFailure):
+        await ctx.send("Nie masz wystarczających uprawnień do wykonania tej komendy.")
+    else:
+        raise error
 
+@edit.command()
+@is_admin()
+async def createtextchannel(ctx, *, input):
+    text_channel = await ctx.guild.create_text_channel(name=input)
+    await ctx.send(f'Utworzono nowy kanał tekstowy: {text_channel.name}')
+    print("Text channel created!")
+
+@createtextchannel.error
+async def createtextchannel_error(ctx, error):
+    if isinstance(error, commands.CheckFailure):
+        await ctx.send("Nie masz wystarczających uprawnień do wykonania tej komendy.")
+    else:
+        raise error
+
+@edit.command()
+@is_admin()
+async def createvoicechannel(ctx, *, input):
+   voice_channel = await ctx.guild.create_voice_channel(name=input)
+   await ctx.send(f'Utworzono nowy kanał głosowy: {voice_channel.name}')
+   print("Voice channel created!")
+
+@createvoicechannel.error
+async def createvoicechannel_error(ctx, error):
+    if isinstance(error, commands.CheckFailure):
+        await ctx.send("Nie masz wystarczających uprawnień do wykonania tej komendy.")
+    else:
+        raise error
+
+@edit.command()
+@is_admin()
+async def createrole(ctx, *, input):
+   role = await ctx.guild.create_role(name=input)
+   await ctx.send(f'Utworzono nową rolę: {role.name}')
+   print("New role created!")
+
+@createrole.error
+async def createrole_error(ctx, error):
+    if isinstance(error, commands.CheckFailure):
+        await ctx.send("Nie masz wystarczających uprawnień do wykonania tej komendy.")
+    else:
+        raise error
+
+@client.command()
+@is_admin()
+async def kick(ctx, member: discord.Member, *, reason = None):
+    await ctx.guild.kick(member, reason=reason)
+
+@kick.error
+async def kick_error(ctx, error):
+    if isinstance(error, commands.CheckFailure):
+        await ctx.send("Nie masz wystarczających uprawnień do wykonania tej komendy.")
+    else:
+        raise error
+
+@client.command()
+@is_admin()
+async def ban(ctx, member: discord.Member, *, reason = None):
+    await ctx.guild.ban(member, reason=reason)
+
+@ban.error
+async def ban_error(ctx, error):
+    if isinstance(error, commands.CheckFailure):
+        await ctx.send("Nie masz wystarczających uprawnień do wykonania tej komendy.")
+    else:
+        raise error
+
+@client.command()
+@is_admin()
+async def unban(ctx, *, input):
+    name, discriminator = input.split("#")
+    async for entry in ctx.guild.bans(limit=150):
+        username = entry.user.name
+        disc = entry.user.discriminator
+        if name == username and discriminator == disc:
+            await ctx.guild.unban(entry.user)
+
+@unban.error
+async def unban_error(ctx, error):
+    if isinstance(error, commands.CheckFailure):
+        await ctx.send("Nie masz wystarczających uprawnień do wykonania tej komendy.")
+    else:
+        raise error
+
+@client.command()
+@is_admin()
+async def deletemessages(ctx, amount, day : int = None, month : int = None, year : int = datetime.now().year):
+    if amount == '/':     #!deletemessages / day month
+        if day == None or month == None:
+            return
+        else:
+            await ctx.channel.purge(after = datetime(year, month, day))
+            print("after - Messages deleted!")
+    else:
+        await ctx.channel.purge(limit = int(amount)+1)
+        print("limit - Messages deleted!")
+@deletemessages.error
+async def deletemessages_error(ctx, error):
+    if isinstance(error, commands.CheckFailure):
+        await ctx.send("Nie masz wystarczających uprawnień do wykonania tej komendy.")
+    else:
+        raise error
 
 token= config('TOKEN') #read token from .env file
 client.run(token, reconnect=True)
