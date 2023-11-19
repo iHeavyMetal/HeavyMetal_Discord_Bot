@@ -13,6 +13,14 @@ def is_admin():
         return any(role.name == "Admin" for role in ctx.author.roles)
     return commands.check(predicate)
 
+def custom_error_handler(error_message):
+    async def error_handler(ctx, error):
+        if isinstance(error, commands.CheckFailure):
+            await ctx.send(error_message)
+        else:
+            raise error
+    return error_handler
+
 @client.event
 async def on_ready():
     print("Online!")
@@ -134,6 +142,11 @@ async def adminhelp(ctx):
     komendy.add_field(name = "!ban", value="Ban użytkownika.", inline=False)
     komendy.add_field(name = "!unban", value="Unban użytkownika.", inline=False)
     komendy.add_field(name = "!deletemessages", value="Usunięcie wiadomości tekstowych. Możliwośc usunięcia określonej liczby wiadomości oraz wiadomości wysłanych po konkretnej dacie '!deletemessages / day month'.", inline=False)
+    komendy.add_field(name="!mute", value="Zmutowanie użytkownika.", inline=False)
+    komendy.add_field(name="!unmute", value="Odmutowanie użytkownika.", inline=False)
+    komendy.add_field(name="!deafen", value="Ogłuszenie użytkownika.", inline=False)
+    komendy.add_field(name="!undeafen", value="?? użytkownika.", inline=False)
+    komendy.add_field(name="!voicekick", value="Kikc użytkownika z kanału głosowego.", inline=False)
     admin_user = ctx.author
     admin_channel = await admin_user.create_dm()
     await admin_channel.send(embed=komendy) #send dm
@@ -264,6 +277,44 @@ async def deletemessages_error(ctx, error):
         await ctx.send("Nie masz wystarczających uprawnień do wykonania tej komendy.")
     else:
         raise error
+
+@client.command()
+@is_admin()
+async def mute(ctx, user : discord.Member):
+    await user.edit(mute = True)
+    print("User muted")
+
+@client.command()
+@is_admin()
+async def unmute(ctx, user : discord.Member):
+    await user.edit(mute = False)
+    print("User unmuted")
+
+@client.command()
+@is_admin()
+async def deafen(ctx, user : discord.Member):
+    await user.edit(deafen = True)
+    print("User deafen")
+
+@client.command()
+@is_admin()
+async def undeafen(ctx, user : discord.Member):
+    await user.edit(deafen = False)
+    print("User undeafen")
+
+@client.command()
+@is_admin()
+async def voicekick(ctx, user : discord.Member):
+    await user.edit(voice_channel = None)
+    print("User kicked")
+
+@mute.error
+@unmute.error
+@deafen.error
+@undeafen.error
+@voicekick.error
+async def handle_admin_commands_errors(ctx, error):
+    await custom_error_handler("Nie masz wystarczających uprawnień do wykonania tej komendy.")(ctx, error)
 
 token= config('TOKEN') #read token from .env file
 client.run(token, reconnect=True)
