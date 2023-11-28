@@ -1,6 +1,7 @@
 import discord
 import random
 from discord.ext import commands
+from errors import handle_admin_commands_errors, custom_error_handler
 from decouple import config
 from datetime import datetime
 
@@ -8,18 +9,14 @@ intents = discord.Intents.all()
 client = discord.Client(intents=intents)
 client = commands.Bot(intents=intents, command_prefix = '!', help_command=None)
 
-def is_admin():
-    async def predicate(ctx):
-        return any(role.name == "Admin" for role in ctx.author.roles)
-    return commands.check(predicate)
+def is_admin():                                                        # checks permissions to execute the command.
+    async def role_check(ctx):                                             # in this case the author must belong to the 'Admin' group
+        return any(role.name == "Admin" for role in ctx.author.roles)     # easier ==> @commands.has_role('Admin')
+    return commands.check(role_check)                                      # @commands.has_permissions(manage_messages = True)
 
-def custom_error_handler(error_message):
-    async def error_handler(ctx, error):
-        if isinstance(error, commands.CheckFailure):
-            await ctx.send(error_message)
-        else:
-            raise error
-    return error_handler
+#def is_me(ctx):
+#    return ctx.author.id == PASTE_ID_HERE      # checks permission by DISCORD_ID. @commands.check(is_me)
+
 
 @client.event
 async def on_ready():
@@ -158,6 +155,8 @@ async def adminhelp_error(ctx, error):
     else:
         raise error
 
+########################   Admin commands   ###########################
+
 @client.group()
 async def edit(ctx):
     pass
@@ -253,6 +252,8 @@ async def voicekick(ctx, user : discord.Member):
     await user.edit(voice_channel = None)
     print("User kicked")
 
+
+########################   Errors handle   ###########################
 @servername.error
 @createtextchannel.error
 @createvoicechannel.error
@@ -266,8 +267,8 @@ async def voicekick(ctx, user : discord.Member):
 @deafen.error
 @undeafen.error
 @voicekick.error
-async def handle_admin_commands_errors(ctx, error):
-    await custom_error_handler("Nie masz wystarczających uprawnień do wykonania tej komendy.")(ctx, error)
+async def command_error(ctx, error):
+    await handle_admin_commands_errors(ctx, error)
 
 token= config('TOKEN') #read token from .env file
 client.run(token, reconnect=True)
