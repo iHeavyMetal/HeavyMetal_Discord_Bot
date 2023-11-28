@@ -4,5 +4,5 @@
 /DRAFT.txt
 /pyvenv.cfg
 /.idea/
-/.env2
+/.env
 /__pycache__/

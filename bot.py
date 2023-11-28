@@ -1,7 +1,13 @@
 import discord
 import random
+
 from discord.ext import commands
-from errors import handle_admin_commands_errors, custom_error_handler
+from errors import (
+    admin_error_handler,
+    handle_admin_commands_errors,
+    deletemessages_error_handler,
+    pkn_error_handler
+    )
 from decouple import config
 from datetime import datetime
 
@@ -23,8 +29,8 @@ async def on_ready():
     print("Online!")
 
 @client.event
-async def on_resume():
-    print("Resume Online!")
+async def on_resumed():
+    print("Connection resumed!")
 
 @client.event
 async def on_message(msg):
@@ -115,6 +121,10 @@ async def pkn(ctx, hand):
         if bothand == "✌️":
             await  ctx.send("Przegrałem!😭 ")
 
+@pkn.error
+async def pkn_error(ctx, error):
+    await pkn_error_handler(ctx, error)
+
 @client.command(aliases=["pomoc", "komendy", "obocie"])
 async def help(ctx):
     print("Command !help")
@@ -148,18 +158,14 @@ async def adminhelp(ctx):
     admin_channel = await admin_user.create_dm()
     await admin_channel.send(embed=komendy) #send dm
     await ctx.message.delete() #delete message !adminhelp from chat
-@adminhelp.error
-async def adminhelp_error(ctx, error):
-    if isinstance(error, commands.CheckFailure):
-        await ctx.send("Nie masz wystarczających uprawnień do wykonania tej komendy.")
-    else:
-        raise error
 
-########################   Admin commands   ###########################
+########################   Admin commands include !edit commands group   ###########################
 
 @client.group()
 async def edit(ctx):
     pass
+
+################ servername change
 
 @edit.command()
 @is_admin()
@@ -168,12 +174,16 @@ async def servername(ctx, *, input):
     await ctx.send(f'Zmieniłem nazwę serwera na: "{server_name.name}"')
     print("Servername changed!")
 
+################ create text channel
+
 @edit.command()
 @is_admin()
 async def createtextchannel(ctx, *, input):
     text_channel = await ctx.guild.create_text_channel(name=input)
     await ctx.send(f'Utworzono nowy kanał tekstowy: {text_channel.name}')
     print("Text channel created!")
+
+################ create voice channel
 
 @edit.command()
 @is_admin()
@@ -182,6 +192,8 @@ async def createvoicechannel(ctx, *, input):
    await ctx.send(f'Utworzono nowy kanał głosowy: {voice_channel.name}')
    print("Voice channel created!")
 
+################ create role
+
 @edit.command()
 @is_admin()
 async def createrole(ctx, *, input):
@@ -189,15 +201,21 @@ async def createrole(ctx, *, input):
    await ctx.send(f'Utworzono nową rolę: {role.name}')
    print("New role created!")
 
+################ kick user
+
 @client.command()
 @is_admin()
 async def kick(ctx, member: discord.Member, *, reason = None):
     await ctx.guild.kick(member, reason=reason)
 
+################ ban user
+
 @client.command()
 @is_admin()
 async def ban(ctx, member: discord.Member, *, reason = None):
     await ctx.guild.ban(member, reason=reason)
+
+################ unban user
 
 @client.command()
 @is_admin()
@@ -208,6 +226,8 @@ async def unban(ctx, *, input):
         disc = entry.user.discriminator
         if name == username and discriminator == disc:
             await ctx.guild.unban(entry.user)
+
+################ delete messages
 
 @client.command()
 @is_admin()
@@ -222,11 +242,19 @@ async def deletemessages(ctx, amount, day : int = None, month : int = None, year
         await ctx.channel.purge(limit = int(amount)+1)
         print("limit - Messages deleted!")
 
+@deletemessages.error
+async def delmsg_error(ctx, error):
+    await deletemessages_error_handler(ctx, error)
+
+################ mute user
+
 @client.command()
 @is_admin()
 async def mute(ctx, user : discord.Member):
     await user.edit(mute = True)
     print("User muted")
+
+################ unmute user
 
 @client.command()
 @is_admin()
@@ -234,11 +262,15 @@ async def unmute(ctx, user : discord.Member):
     await user.edit(mute = False)
     print("User unmuted")
 
+################ deafen user
+
 @client.command()
 @is_admin()
 async def deafen(ctx, user : discord.Member):
     await user.edit(deafen = True)
     print("User deafen")
+
+################ undeafen user
 
 @client.command()
 @is_admin()
@@ -246,14 +278,21 @@ async def undeafen(ctx, user : discord.Member):
     await user.edit(deafen = False)
     print("User undeafen")
 
+################ kick user from voice channel
+
 @client.command()
 @is_admin()
 async def voicekick(ctx, user : discord.Member):
     await user.edit(voice_channel = None)
     print("User kicked")
 
-
 ########################   Errors handle   ###########################
+
+@client.event
+async def on_command_error(ctx, error):
+    if isinstance(error, commands.CommandNotFound):
+        await ctx.send('Nie znalazłem takiej komendy. Listę komend możesz sprawdzić wpisując !help, !pomoc, !komendy, !obocie ":disguised_face:" ')
+
 @servername.error
 @createtextchannel.error
 @createvoicechannel.error
@@ -261,14 +300,15 @@ async def voicekick(ctx, user : discord.Member):
 @kick.error
 @ban.error
 @unban.error
-@deletemessages.error
 @mute.error
 @unmute.error
 @deafen.error
 @undeafen.error
 @voicekick.error
-async def command_error(ctx, error):
+@adminhelp.error
+async def admin_commands_error(ctx, error):
     await handle_admin_commands_errors(ctx, error)
 
+########################   Login and connect   ###########################
 token= config('TOKEN') #read token from .env file
 client.run(token, reconnect=True)
