@@ -12,8 +12,8 @@ from decouple import config
 from datetime import datetime
 
 intents = discord.Intents.all()
-client = discord.Client(intents=intents)
-client = commands.Bot(intents=intents, command_prefix = '!', help_command=None)
+bot = discord.Client(intents=intents)
+bot = commands.Bot(intents=intents, command_prefix = '!', help_command=None)
 
 def is_admin():                                                        # checks permissions to execute the command.
     async def role_check(ctx):                                             # in this case the author must belong to the 'Admin' group
@@ -24,41 +24,40 @@ def is_admin():                                                        # checks 
 #    return ctx.author.id == PASTE_ID_HERE      # checks permission by DISCORD_ID. @commands.check(is_me)
 
 
-@client.event
-async def on_ready():
-    print("Online!")
+# @bot.event
+# async def on_ready():
+#     print("Online!")
 
-@client.event
+@bot.event
 async def on_resumed():
     print("Connection resumed!")
 
-@client.event
-async def on_message(msg):
-    print(f"Message from: {msg.author}: {msg.content}")  # print message
-    author_name = msg.author.mention
-    if msg.author == client.user:
-        return
+#@bot.event
+#async def on_message(msg):
+    # print(f"Message from: {msg.author}: {msg.content}")  # print message to the console
+    # author_name = msg.author.mention
+    # if msg.author == bot.user:
+    #     return
+    #
+    # if msg.content.lower().startswith('cześć'):
+    #     print("Command on_message!")
+    #     await msg.channel.send('Cześć! ' + author_name)
+    #await bot.process_commands(msg)
 
-    if msg.content.lower().startswith('cześć'):
-        print("Command on_message!")
-        await msg.channel.send('Cześć! ' + author_name)
-
-    await client.process_commands(msg)
-
-@client.event
+@bot.event
 async def on_member_join(member):
     guild = member.guild
     guildname = guild.name
     dmchannel = await member.create_dm()
     await dmchannel.send(f"Witamy na discordzie {guildname}!")
 
-@client.event
+@bot.event
 async def on_raw_reaction_add(payload):
     emoji = payload.emoji.name
     member = payload.member
     message_id = payload.message_id
     guild_id = payload.guild_id
-    guild = client.get_guild(guild_id)
+    guild = bot.get_guild(guild_id)
 
     if emoji == "✍️" and message_id == 1158011769759993990:
         role = discord.utils.get(guild.roles, name = "Write_Fan")
@@ -68,12 +67,12 @@ async def on_raw_reaction_add(payload):
         role = discord.utils.get(guild.roles, name = "Emoji_Fan")
         await member.add_roles(role)
 
-@client.event
+@bot.event
 async def on_raw_reaction_remove(payload):
     emoji = payload.emoji.name
     message_id = payload.message_id
     guild_id = payload.guild_id
-    guild = client.get_guild(guild_id)
+    guild = bot.get_guild(guild_id)
     user_id = payload.user_id
     member = guild.get_member(user_id)
     if emoji == "✍️" and message_id == 1158011769759993990:
@@ -84,12 +83,12 @@ async def on_raw_reaction_remove(payload):
         role = discord.utils.get(guild.roles, name = "Emoji_Fan")
         await member.remove_roles(role)
 
-@client.command()
+@bot.command()
 async def ping(ctx):
     print("Command !ping")
     await ctx.send("Pong!")
 
-@client.command()
+@bot.command()
 async def rzutmoneta(ctx):
     number = random.randint(1,2)
 
@@ -98,7 +97,7 @@ async def rzutmoneta(ctx):
     if number == 2:
         await ctx.send("Reszka")
 
-@client.command()
+@bot.command()
 async def pkn(ctx, hand):
     hands = ["👊", "✌️", "✋",]
     bothand = random.choice(hands)
@@ -125,7 +124,7 @@ async def pkn(ctx, hand):
 async def pkn_error(ctx, error):
     await pkn_error_handler(ctx, error)
 
-@client.command(aliases=["pomoc", "komendy", "obocie"])
+@bot.command(aliases=["pomoc", "komendy", "obocie"])
 async def help(ctx):
     print("Command !help")
     komendy = discord.Embed(title = "Komendy", description = "Takich komend możesz użyć do obsługi bota:", color = discord.Colour.brand_red())
@@ -135,7 +134,7 @@ async def help(ctx):
     komendy.add_field(name = "!pkn", value="Użyj emoji-   👊, ✌️, ✋, aby zagrać w papier, kamień, nożyce 🤘", inline=False)
     await ctx.send(embed = komendy)
 
-@client.command(aliases=["adminpomoc", "adminkomendy", "adminobocie"])
+@bot.command(aliases=["adminpomoc", "adminkomendy", "adminobocie"])
 @is_admin()
 async def adminhelp(ctx):
     print("Command !adminhelp")
@@ -154,6 +153,9 @@ async def adminhelp(ctx):
     komendy.add_field(name="!deafen", value="Ogłuszenie użytkownika.", inline=False)
     komendy.add_field(name="!undeafen", value="Przywrócenie odsłuchu użytkownikowi.", inline=False)
     komendy.add_field(name="!voicekick", value="Kick użytkownika z kanału głosowego.", inline=False)
+    komendy.add_field(name="!reload_admin", value="Przeładowanie pliku cogs_admin.", inline=False)
+    komendy.add_field(name="!reload_bot", value="Przeładowanie pliku cogs_bot.", inline=False)
+    komendy.add_field(name="!reload_user", value="Przeładowanie pliku cogs_user.", inline=False)
     admin_user = ctx.author
     admin_channel = await admin_user.create_dm()
     await admin_channel.send(embed=komendy) #send dm
@@ -161,7 +163,7 @@ async def adminhelp(ctx):
 
 ########################   Admin commands include !edit commands group   ###########################
 
-@client.group()
+@bot.group()
 async def edit(ctx):
     pass
 
@@ -203,21 +205,21 @@ async def createrole(ctx, *, input):
 
 ################ kick user
 
-@client.command()
+@bot.command()
 @is_admin()
 async def kick(ctx, member: discord.Member, *, reason = None):
     await ctx.guild.kick(member, reason=reason)
 
 ################ ban user
 
-@client.command()
+@bot.command()
 @is_admin()
 async def ban(ctx, member: discord.Member, *, reason = None):
     await ctx.guild.ban(member, reason=reason)
 
 ################ unban user
 
-@client.command()
+@bot.command()
 @is_admin()
 async def unban(ctx, *, input):
     name, discriminator = input.split("#")
@@ -229,7 +231,7 @@ async def unban(ctx, *, input):
 
 ################ delete messages
 
-@client.command()
+@bot.command()
 @is_admin()
 async def deletemessages(ctx, amount, day : int = None, month : int = None, year : int = datetime.now().year):
     if amount == '/':     #!deletemessages / day month
@@ -248,7 +250,7 @@ async def delmsg_error(ctx, error):
 
 ################ mute user
 
-@client.command()
+@bot.command()
 @is_admin()
 async def mute(ctx, user : discord.Member):
     await user.edit(mute = True)
@@ -256,7 +258,7 @@ async def mute(ctx, user : discord.Member):
 
 ################ unmute user
 
-@client.command()
+@bot.command()
 @is_admin()
 async def unmute(ctx, user : discord.Member):
     await user.edit(mute = False)
@@ -264,7 +266,7 @@ async def unmute(ctx, user : discord.Member):
 
 ################ deafen user
 
-@client.command()
+@bot.command()
 @is_admin()
 async def deafen(ctx, user : discord.Member):
     await user.edit(deafen = True)
@@ -272,7 +274,7 @@ async def deafen(ctx, user : discord.Member):
 
 ################ undeafen user
 
-@client.command()
+@bot.command()
 @is_admin()
 async def undeafen(ctx, user : discord.Member):
     await user.edit(deafen = False)
@@ -280,7 +282,7 @@ async def undeafen(ctx, user : discord.Member):
 
 ################ kick user from voice channel
 
-@client.command()
+@bot.command()
 @is_admin()
 async def voicekick(ctx, user : discord.Member):
     await user.edit(voice_channel = None)
@@ -288,7 +290,7 @@ async def voicekick(ctx, user : discord.Member):
 
 ########################   Errors handle   ###########################
 
-@client.event
+@bot.event
 async def on_command_error(ctx, error):
     if isinstance(error, commands.CommandNotFound):
         await ctx.send('Nie znalazłem takiej komendy. Listę komend możesz sprawdzić wpisując !help, !pomoc, !komendy, !obocie ":disguised_face:" ')
@@ -309,6 +311,38 @@ async def on_command_error(ctx, error):
 async def admin_commands_error(ctx, error):
     await handle_admin_commands_errors(ctx, error)
 
+########################   Cogs commands   ###########################
+
+@bot.command()
+@is_admin()
+async def reload_admin(ctx):
+    await bot.reload_extension("cogs_admin")
+    print(">>>>>>>>>>>>>>>Admin extension reloaded<<<<<<<<<<<<<<<")
+
+@bot.command()
+@is_admin()
+async def reload_bot(ctx):
+    await bot.reload_extension("cogs_bot")
+    print(">>>>>>>>>>>>>>>Bot extension reloaded<<<<<<<<<<<<<<<")
+
+@bot.command()
+@is_admin()
+async def reload_user(ctx):
+    await bot.reload_extension("cogs_user")
+    print(">>>>>>>>>>>>>>>User extension reloaded<<<<<<<<<<<<<<<")
+
+########################   Cogs load   ###########################
+
+@bot.event
+async def on_ready():
+    print(">>>>>>>>>>>>>>>Online!<<<<<<<<<<<<<<<")
+    # await bot.load_extension("cogs_admin")
+    # print(">>>>>>>>>>>>>>>Admin extension loaded<<<<<<<<<<<<<<<")
+    # await bot.load_extension("cogs_bot")
+    # print(">>>>>>>>>>>>>>>Bot extension loaded<<<<<<<<<<<<<<<")
+    await bot.load_extension("cogs_user")
+    print(">>>>>>>>>>>>>>>User extension loaded<<<<<<<<<<<<<<<")
+
 ########################   Login and connect   ###########################
 token= config('TOKEN') #read token from .env file
-client.run(token, reconnect=True)
+bot.run(token, reconnect=True)
