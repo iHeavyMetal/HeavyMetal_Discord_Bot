@@ -4,6 +4,8 @@ class UserCog(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
+    ########################   Replying to messages and printing messages in the console  ###########################
+
     @commands.Cog.listener()
     async def on_message(self,msg):
         print(f"Message from: {msg.author}: {msg.content}")  # printing messages in the console

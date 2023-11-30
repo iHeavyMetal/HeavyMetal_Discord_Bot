@@ -23,40 +23,6 @@ def is_admin():                                                        # checks 
 #def is_me(ctx):
 #    return ctx.author.id == PASTE_ID_HERE      # checks permission by DISCORD_ID. @commands.check(is_me)
 
-
-
-@bot.event
-async def on_raw_reaction_add(payload):
-    emoji = payload.emoji.name
-    member = payload.member
-    message_id = payload.message_id
-    guild_id = payload.guild_id
-    guild = bot.get_guild(guild_id)
-
-    if emoji == "✍️" and message_id == 1158011769759993990:
-        role = discord.utils.get(guild.roles, name = "Write_Fan")
-        await member.add_roles(role)
-
-    if emoji == "💩" and message_id == 1158011796490293258:
-        role = discord.utils.get(guild.roles, name = "Emoji_Fan")
-        await member.add_roles(role)
-
-@bot.event
-async def on_raw_reaction_remove(payload):
-    emoji = payload.emoji.name
-    message_id = payload.message_id
-    guild_id = payload.guild_id
-    guild = bot.get_guild(guild_id)
-    user_id = payload.user_id
-    member = guild.get_member(user_id)
-    if emoji == "✍️" and message_id == 1158011769759993990:
-        role = discord.utils.get(guild.roles, name = "Write_Fan")
-        await member.remove_roles(role)
-
-    if emoji == "💩" and message_id == 1158011796490293258:
-        role = discord.utils.get(guild.roles, name = "Emoji_Fan")
-        await member.remove_roles(role)
-
 @bot.command()
 async def ping(ctx):
     print("Command !ping")
