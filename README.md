@@ -25,4 +25,9 @@ GUILDID=
 - give a role after reacting with the selected emoji to a message (cogs_bot)  
 - Ping-Pong game (cogs_user)  
 - Coin flip game (cogs_user) 
+- Rock paper scissors game (cogs_user)  
+- Embed with user commands list. (bot)  
+- Embed with admin commands list. (bot)  
+- Checks whether the user issuing the command has sufficient permissions   
+- Group commands: create voice channel, create text channel, create role, change server name (cogs_admin)  
 - 

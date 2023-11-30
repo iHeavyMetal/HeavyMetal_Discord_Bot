@@ -1,11 +1,11 @@
 import discord
+import random
 
 from discord.ext import commands
 from errors import (
     admin_error_handler,
     handle_admin_commands_errors,
     deletemessages_error_handler,
-    pkn_error_handler
     )
 from decouple import config
 from datetime import datetime
@@ -14,40 +14,13 @@ intents = discord.Intents.all()
 bot = discord.Client(intents=intents)
 bot = commands.Bot(intents=intents, command_prefix = '!', help_command=None)
 
-def is_admin():                                                        # checks permissions to execute the command.
+def is_admin():                                                            # checks permissions to execute the command.
     async def role_check(ctx):                                             # in this case the author must belong to the 'Admin' group
-        return any(role.name == "Admin" for role in ctx.author.roles)     # easier ==> @commands.has_role('Admin')
+        return any(role.name == "Admin" for role in ctx.author.roles)      # easier ==> @commands.has_role('Admin')
     return commands.check(role_check)                                      # @commands.has_permissions(manage_messages = True)
 
 #def is_me(ctx):
 #    return ctx.author.id == PASTE_ID_HERE      # checks permission by DISCORD_ID. @commands.check(is_me)
-
-@bot.command()
-async def pkn(ctx, hand):
-    hands = ["👊", "✌️", "✋",]
-    bothand = random.choice(hands)
-    await ctx.send(bothand)
-    if hand == bothand:
-        await ctx.send("Remis")
-    elif hand == "✌️":
-        if bothand == "👊":
-            await ctx.send("Wygrałem!")
-        if bothand == "✋":
-            await  ctx.send("Przegrałem!😭 ")
-    elif hand == "✋":
-        if bothand == "✌️":
-            await ctx.send("Wygrałem!")
-        if bothand == "👊":
-            await  ctx.send("Przegrałem!😭 ")
-    elif hand == "👊":
-        if bothand == "✋":
-            await ctx.send("Wygrałem!")
-        if bothand == "✌️":
-            await  ctx.send("Przegrałem!😭 ")
-
-@pkn.error
-async def pkn_error(ctx, error):
-    await pkn_error_handler(ctx, error)
 
 @bot.command(aliases=["pomoc", "komendy", "obocie"])
 async def help(ctx):
@@ -85,48 +58,6 @@ async def adminhelp(ctx):
     admin_channel = await admin_user.create_dm()
     await admin_channel.send(embed=komendy) #send dm
     await ctx.message.delete() #delete message !adminhelp from chat
-
-########################   Admin commands include !edit commands group   ###########################
-
-@bot.group()
-async def edit(ctx):
-    pass
-
-################ servername change
-
-@edit.command()
-@is_admin()
-async def servername(ctx, *, input):
-    server_name = await ctx.guild.edit(name=input)
-    await ctx.send(f'Zmieniłem nazwę serwera na: "{server_name.name}"')
-    print("Servername changed!")
-
-################ create text channel
-
-@edit.command()
-@is_admin()
-async def createtextchannel(ctx, *, input):
-    text_channel = await ctx.guild.create_text_channel(name=input)
-    await ctx.send(f'Utworzono nowy kanał tekstowy: {text_channel.name}')
-    print("Text channel created!")
-
-################ create voice channel
-
-@edit.command()
-@is_admin()
-async def createvoicechannel(ctx, *, input):
-   voice_channel = await ctx.guild.create_voice_channel(name=input)
-   await ctx.send(f'Utworzono nowy kanał głosowy: {voice_channel.name}')
-   print("Voice channel created!")
-
-################ create role
-
-@edit.command()
-@is_admin()
-async def createrole(ctx, *, input):
-   role = await ctx.guild.create_role(name=input)
-   await ctx.send(f'Utworzono nową rolę: {role.name}')
-   print("New role created!")
 
 ################ kick user
 
@@ -218,12 +149,12 @@ async def voicekick(ctx, user : discord.Member):
 @bot.event
 async def on_command_error(ctx, error):
     if isinstance(error, commands.CommandNotFound):
-        await ctx.send('Nie znalazłem takiej komendy. Listę komend możesz sprawdzić wpisując !help, !pomoc, !komendy, !obocie ":disguised_face:" ')
+        await ctx.send('Nie znalazłem takiej komendy. Listę komend możesz sprawdzić wpisując !help, !pomoc, !komendy, !obocie :disguised_face: ')
 
-@servername.error
-@createtextchannel.error
-@createvoicechannel.error
-@createrole.error
+#@servername.error
+#@createtextchannel.error
+#@createvoicechannel.error
+#@createrole.error
 @kick.error
 @ban.error
 @unban.error
@@ -242,18 +173,24 @@ async def admin_commands_error(ctx, error):
 @is_admin()
 async def reload_admin(ctx):
     await bot.reload_extension("cogs_admin")
+    await ctx.message.delete()
+    await  ctx.send("Done!")
     print(">>>>>>>>>>>>>>>Admin extension reloaded<<<<<<<<<<<<<<<")
 
 @bot.command()
 @is_admin()
 async def reload_bot(ctx):
     await bot.reload_extension("cogs_bot")
+    await ctx.message.delete()
+    await  ctx.send("Done!")
     print(">>>>>>>>>>>>>>>Bot extension reloaded<<<<<<<<<<<<<<<")
 
 @bot.command()
 @is_admin()
 async def reload_user(ctx):
     await bot.reload_extension("cogs_user")
+    await ctx.message.delete()
+    await  ctx.send("Done!")
     print(">>>>>>>>>>>>>>>User extension reloaded<<<<<<<<<<<<<<<")
 
 ########################   Cogs load and online status  ###########################
@@ -261,8 +198,8 @@ async def reload_user(ctx):
 @bot.event
 async def on_ready():
     print(">>>>>>>>>>>>>>>Online!<<<<<<<<<<<<<<<")
-    # await bot.load_extension("cogs_admin")
-    # print(">>>>>>>>>>>>>>>Admin extension loaded<<<<<<<<<<<<<<<")
+    await bot.load_extension("cogs_admin")
+    print(">>>>>>>>>>>>>>>Admin extension loaded<<<<<<<<<<<<<<<")
     await bot.load_extension("cogs_bot")
     print(">>>>>>>>>>>>>>>Bot extension loaded<<<<<<<<<<<<<<<")
     await bot.load_extension("cogs_user")

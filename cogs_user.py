@@ -1,5 +1,7 @@
 import random
+
 from discord.ext import commands
+from errors import pkn_error_handler
 
 class UserCog(commands.Cog):
     def __init__(self, bot):
@@ -17,7 +19,34 @@ class UserCog(commands.Cog):
             print("Command on_message!")
             await msg.channel.send('Cześć! ' + author_name)  #respond message
 
-        await self.bot.process_commands(msg)
+        #await self.bot.process_commands(msg)     # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! dlaczego w sytuacji gdy jest ta linia odkomentowana bot wysyła podwójne wiadomości?
+
+    @commands.command()
+    async def pkn(self, ctx, hand):
+        hands = ["👊", "✌️", "✋", ]
+        bothand = random.choice(hands)
+        await ctx.send(bothand)
+        if hand == bothand:
+            await ctx.send("Remis")
+        elif hand == "✌️":
+            if bothand == "👊":
+                await ctx.send("Wygrałem!")
+            if bothand == "✋":
+                await  ctx.send("Przegrałem!😭 ")
+        elif hand == "✋":
+            if bothand == "✌️":
+                await ctx.send("Wygrałem!")
+            if bothand == "👊":
+                await  ctx.send("Przegrałem!😭 ")
+        elif hand == "👊":
+            if bothand == "✋":
+                await ctx.send("Wygrałem!")
+            if bothand == "✌️":
+                await  ctx.send("Przegrałem!😭 ")
+
+    @pkn.error
+    async def pkn_error(self, ctx, error):
+        await pkn_error_handler(self, ctx, error)
 
     ########################   Ping-Pong game ###########################
 
