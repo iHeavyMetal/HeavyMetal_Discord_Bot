@@ -8,7 +8,7 @@ from errors import (
     deletemessages_error_handler,
     )
 from decouple import config
-from datetime import datetime
+
 
 intents = discord.Intents.all()
 bot = discord.Client(intents=intents)
@@ -59,91 +59,6 @@ async def adminhelp(ctx):
     await admin_channel.send(embed=komendy) #send dm
     await ctx.message.delete() #delete message !adminhelp from chat
 
-################ kick user
-
-@bot.command()
-@is_admin()
-async def kick(ctx, member: discord.Member, *, reason = None):
-    await ctx.guild.kick(member, reason=reason)
-
-################ ban user
-
-@bot.command()
-@is_admin()
-async def ban(ctx, member: discord.Member, *, reason = None):
-    await ctx.guild.ban(member, reason=reason)
-
-################ unban user
-
-@bot.command()
-@is_admin()
-async def unban(ctx, *, input):
-    name, discriminator = input.split("#")
-    async for entry in ctx.guild.bans(limit=150):
-        username = entry.user.name
-        disc = entry.user.discriminator
-        if name == username and discriminator == disc:
-            await ctx.guild.unban(entry.user)
-
-################ delete messages
-
-@bot.command()
-@is_admin()
-async def deletemessages(ctx, amount, day : int = None, month : int = None, year : int = datetime.now().year):
-    if amount == '/':     #!deletemessages / day month
-        if day == None or month == None:
-            return
-        else:
-            await ctx.channel.purge(after = datetime(year, month, day))
-            print("after - Messages deleted!")
-    else:
-        await ctx.channel.purge(limit = int(amount)+1)
-        print("limit - Messages deleted!")
-
-@deletemessages.error
-async def delmsg_error(ctx, error):
-    await deletemessages_error_handler(ctx, error)
-
-################ mute user
-
-@bot.command()
-@is_admin()
-async def mute(ctx, user : discord.Member):
-    await user.edit(mute = True)
-    print("User muted")
-
-################ unmute user
-
-@bot.command()
-@is_admin()
-async def unmute(ctx, user : discord.Member):
-    await user.edit(mute = False)
-    print("User unmuted")
-
-################ deafen user
-
-@bot.command()
-@is_admin()
-async def deafen(ctx, user : discord.Member):
-    await user.edit(deafen = True)
-    print("User deafen")
-
-################ undeafen user
-
-@bot.command()
-@is_admin()
-async def undeafen(ctx, user : discord.Member):
-    await user.edit(deafen = False)
-    print("User undeafen")
-
-################ kick user from voice channel
-
-@bot.command()
-@is_admin()
-async def voicekick(ctx, user : discord.Member):
-    await user.edit(voice_channel = None)
-    print("User kicked")
-
 ########################   Errors handle   ###########################
 
 @bot.event
@@ -155,14 +70,14 @@ async def on_command_error(ctx, error):
 #@createtextchannel.error
 #@createvoicechannel.error
 #@createrole.error
-@kick.error
-@ban.error
-@unban.error
-@mute.error
-@unmute.error
-@deafen.error
-@undeafen.error
-@voicekick.error
+# @kick.error
+# @ban.error
+# @unban.error
+# @mute.error
+# @unmute.error
+# @deafen.error
+# @undeafen.error
+# @voicekick.error
 @adminhelp.error
 async def admin_commands_error(ctx, error):
     await handle_admin_commands_errors(ctx, error)

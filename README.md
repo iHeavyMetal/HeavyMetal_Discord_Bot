@@ -29,5 +29,6 @@ GUILDID=
 - Embed with user commands list. (bot)  
 - Embed with admin commands list. (bot)  
 - Checks whether the user issuing the command has sufficient permissions   
-- Group commands: create voice channel, create text channel, create role, change server name (cogs_admin)  
+- Admin group commands: create voice channel, create text channel, create role, change server name (cogs_admin)  
+- Admin commands: kick, ban, mute, unmute, unban, deafen, undeafen, delete messages(by date or by quantity), kick from voice channel  
 - 
