@@ -24,32 +24,6 @@ def is_admin():                                                        # checks 
 #    return ctx.author.id == PASTE_ID_HERE      # checks permission by DISCORD_ID. @commands.check(is_me)
 
 
-# @bot.event
-# async def on_ready():
-#     print("Online!")
-
-@bot.event
-async def on_resumed():
-    print("Connection resumed!")
-
-#@bot.event
-#async def on_message(msg):
-    # print(f"Message from: {msg.author}: {msg.content}")  # print message to the console
-    # author_name = msg.author.mention
-    # if msg.author == bot.user:
-    #     return
-    #
-    # if msg.content.lower().startswith('cześć'):
-    #     print("Command on_message!")
-    #     await msg.channel.send('Cześć! ' + author_name)
-    #await bot.process_commands(msg)
-
-@bot.event
-async def on_member_join(member):
-    guild = member.guild
-    guildname = guild.name
-    dmchannel = await member.create_dm()
-    await dmchannel.send(f"Witamy na discordzie {guildname}!")
 
 @bot.event
 async def on_raw_reaction_add(payload):
@@ -331,18 +305,23 @@ async def reload_user(ctx):
     await bot.reload_extension("cogs_user")
     print(">>>>>>>>>>>>>>>User extension reloaded<<<<<<<<<<<<<<<")
 
-########################   Cogs load   ###########################
+########################   Cogs load and online status  ###########################
 
 @bot.event
 async def on_ready():
     print(">>>>>>>>>>>>>>>Online!<<<<<<<<<<<<<<<")
     # await bot.load_extension("cogs_admin")
     # print(">>>>>>>>>>>>>>>Admin extension loaded<<<<<<<<<<<<<<<")
-    # await bot.load_extension("cogs_bot")
-    # print(">>>>>>>>>>>>>>>Bot extension loaded<<<<<<<<<<<<<<<")
+    await bot.load_extension("cogs_bot")
+    print(">>>>>>>>>>>>>>>Bot extension loaded<<<<<<<<<<<<<<<")
     await bot.load_extension("cogs_user")
     print(">>>>>>>>>>>>>>>User extension loaded<<<<<<<<<<<<<<<")
 
 ########################   Login and connect   ###########################
+
+@bot.event
+async def on_resumed():
+    print(">>>>>>>>>>>>>>>Connection resumed!<<<<<<<<<<<<<<<")
+
 token= config('TOKEN') #read token from .env file
 bot.run(token, reconnect=True)

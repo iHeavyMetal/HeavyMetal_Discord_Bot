@@ -6,21 +6,15 @@ class UserCog(commands.Cog):
 
     @commands.Cog.listener()
     async def on_message(self,msg):
-        print(f"Message from: {msg.author}: {msg.content}")  # print message
+        print(f"Message from: {msg.author}: {msg.content}")  # printing messages in the console
         author_name = msg.author.mention
         if msg.author == self.bot.user:
             return
-
-        if msg.content.lower().startswith('cześć'):
+        if msg.content.lower().startswith(('cześć', 'czesc')):          #set message the bot should respond to
             print("Command on_message!")
-            await msg.channel.send('Cześć! ' + author_name)
+            await msg.channel.send('Cześć! ' + author_name)  #respond message
 
         await self.bot.process_commands(msg)
-
-    @commands.command()
-    async def black(self,ctx):
-        await ctx.send("White")
-
 
 async def setup(bot):
     await bot.add_cog(UserCog(bot))
