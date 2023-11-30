@@ -1,5 +1,4 @@
 import discord
-import random
 
 from discord.ext import commands
 from errors import (
@@ -22,20 +21,6 @@ def is_admin():                                                        # checks 
 
 #def is_me(ctx):
 #    return ctx.author.id == PASTE_ID_HERE      # checks permission by DISCORD_ID. @commands.check(is_me)
-
-@bot.command()
-async def ping(ctx):
-    print("Command !ping")
-    await ctx.send("Pong!")
-
-@bot.command()
-async def rzutmoneta(ctx):
-    number = random.randint(1,2)
-
-    if number == 1:
-        await ctx.send("Orzeł")
-    if number == 2:
-        await ctx.send("Reszka")
 
 @bot.command()
 async def pkn(ctx, hand):

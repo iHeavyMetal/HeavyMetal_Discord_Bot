@@ -23,4 +23,6 @@ GUILDID=
 - reacting to messages (cogs_user)  
 - sending DM with a welcome message after joining the server (cogs_bot)  
 - give a role after reacting with the selected emoji to a message (cogs_bot)  
+- Ping-Pong game (cogs_user)  
+- Coin flip game (cogs_user) 
 - 

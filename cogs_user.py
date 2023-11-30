@@ -1,3 +1,4 @@
+import random
 from discord.ext import commands
 
 class UserCog(commands.Cog):
@@ -17,6 +18,24 @@ class UserCog(commands.Cog):
             await msg.channel.send('Cześć! ' + author_name)  #respond message
 
         await self.bot.process_commands(msg)
+
+    ########################   Ping-Pong game ###########################
+
+    @commands.command()
+    async def ping(self, ctx):
+        print("Command !ping")
+        await ctx.send("Pong!")
+
+    ######################## Coin flip    ###########################
+
+    @commands.command()
+    async def rzutmoneta(self, ctx):
+        number = random.randint(1, 2)
+
+        if number == 1:
+            await ctx.send("Orzeł")         #heads
+        if number == 2:
+            await ctx.send("Reszka")        #tails
 
 async def setup(bot):
     await bot.add_cog(UserCog(bot))
